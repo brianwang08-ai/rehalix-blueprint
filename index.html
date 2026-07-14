@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Rehalix Blueprint</title>
+<style>:root {
+  color-scheme: light dark;
+  background-color: transparent !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --main-surface-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: light-dark(rgb(26 28 31), rgb(255 255 255));
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(--foreground);
+  --popover: light-dark(rgb(255 255 255), rgb(45 45 45));
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --primary-foreground: light-dark(rgb(255 255 255), rgb(13 13 13));
+  --secondary: light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%));
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: light-dark(
+    rgb(26 28 31 / 49.4%),
+    rgb(255 255 255 / 49.8%)
+  );
+  --accent: light-dark(rgb(229 242 255), rgb(13 39 63));
+  --accent-foreground: var(--primary);
+  --destructive: light-dark(rgb(226 85 7), rgb(255 133 73));
+  --border: light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%));
+  --input: light-dark(
+    rgb(26 28 31 / 11.8%),
+    color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+  );
+  --ring: light-dark(rgb(51 156 255), rgb(131 195 255 / 76%));
+  --font-size-base: 14px;
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: 10px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17'%3E%3Cpath d='M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z'/%3E%3C/svg%3E");
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+  --color-background-primary: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-border-secondary: var(--border);
+}
+
+:root[data-visualize-standalone] {
+  background-color: var(--background) !important;
+}
+
+/* Generic mobile code-block hosts provide light/dark mode but no series palette.
+   AppBlock hosts set all six variables themselves. */
+:root:not([data-app-block-surface]) {
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(#f3883b, #f59a56);
+  --viz-series-3: light-dark(#5dc977, #74d58b);
+  --viz-series-4: light-dark(#eb77b1, #f08fc0);
+  --viz-series-5: light-dark(#9b79ec, #aa91ef);
+  --viz-series-6: light-dark(#3ab9b1, #5acbc2);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html > body {
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+:root:not([data-app-block-surface]) > body {
+  padding: 12px;
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--viz-font-weight-medium);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget > :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-legend,
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls > .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls > .form-label > :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type="checkbox"]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: "";
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type="radio"]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: "";
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed="true"], [aria-selected="true"], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget > svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+</style>
+</head>
+<body>
+<main id="rehalix-blueprint" class="rehalix-shell">
+  <style>
+    #rehalix-blueprint{--font-size-base:15px;color:var(--foreground);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--background);min-height:100vh}
+    #rehalix-blueprint *{box-sizing:border-box}
+    #rehalix-blueprint .rehalix-shell{max-width:1180px;margin:0 auto}
+    #rehalix-blueprint .topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--background) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+    #rehalix-blueprint .topbar-inner{max-width:1180px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between}
+    #rehalix-blueprint .brand{display:flex;align-items:center;gap:10px;min-width:max-content}
+    #rehalix-blueprint .brand-mark{width:28px;height:28px;border-radius:9px;background:var(--primary);color:var(--primary-foreground);display:grid;place-items:center;font-weight:500}
+    #rehalix-blueprint .brand-copy{display:flex;flex-direction:column}
+    #rehalix-blueprint .brand-copy strong{font-size:14px;font-weight:500;letter-spacing:.08em}
+    #rehalix-blueprint .brand-copy span{font-size:11px;color:var(--muted-foreground)}
+    #rehalix-blueprint .section-nav{display:flex;gap:4px;overflow:auto;padding-bottom:1px}
+    #rehalix-blueprint .nav-btn{border:0;background:transparent;color:var(--muted-foreground);padding:8px 10px;border-radius:8px;white-space:nowrap;cursor:pointer;font:inherit;font-size:13px}
+    #rehalix-blueprint .nav-btn:hover{background:var(--accent);color:var(--accent-foreground)}
+    #rehalix-blueprint .nav-btn[aria-pressed="true"]{background:var(--primary);color:var(--primary-foreground)}
+    #rehalix-blueprint .content{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+    #rehalix-blueprint .panel{display:none}
+    #rehalix-blueprint .panel.is-active{display:block}
+    #rehalix-blueprint .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted-foreground);margin:0 0 10px}
+    #rehalix-blueprint h1{font-size:clamp(32px,5vw,64px);line-height:1.02;letter-spacing:-.045em;font-weight:500;margin:0;max-width:900px}
+    #rehalix-blueprint h2{font-size:clamp(25px,3vw,38px);line-height:1.08;letter-spacing:-.03em;font-weight:500;margin:0 0 10px}
+    #rehalix-blueprint h3{font-size:17px;font-weight:500;margin:0}
+    #rehalix-blueprint p{line-height:1.65}
+    #rehalix-blueprint .lede{font-size:17px;max-width:760px;color:var(--muted-foreground);margin:18px 0 24px}
+    #rehalix-blueprint .hero{padding:48px 0 24px}
+    #rehalix-blueprint .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+    #rehalix-blueprint .action{font:inherit;font-size:14px;border:1px solid var(--border);background:var(--card);color:var(--card-foreground);padding:10px 14px;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    #rehalix-blueprint .action:hover{background:var(--accent);color:var(--accent-foreground)}
+    #rehalix-blueprint .action.primary{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+    #rehalix-blueprint .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:30px 0}
+    #rehalix-blueprint .metric{background:var(--card);color:var(--card-foreground);border:1px solid var(--border);border-radius:14px;padding:17px}
+    #rehalix-blueprint .metric strong{display:block;font-size:27px;font-weight:500;margin-bottom:4px}
+    #rehalix-blueprint .metric span{font-size:12px;color:var(--muted-foreground)}
+    #rehalix-blueprint .strategy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
+    #rehalix-blueprint .strategy-card{border-top:2px solid var(--primary);padding:17px 2px 4px}
+    #rehalix-blueprint .strategy-card p{color:var(--muted-foreground);font-size:14px;margin:8px 0 0}
+    #rehalix-blueprint .section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:12px 0 24px}
+    #rehalix-blueprint .section-head p{max-width:620px;color:var(--muted-foreground);margin:0}
+    #rehalix-blueprint .workspace{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(360px,1.4fr);gap:16px;align-items:start}
+    #rehalix-blueprint .tree,.detail,.journey,.capability,.decision-board,.wireframe{background:var(--card);color:var(--card-foreground);border:1px solid var(--border);border-radius:16px}
+    #rehalix-blueprint .tree{padding:14px}
+    #rehalix-blueprint .tree-toolbar{display:flex;gap:8px;margin-bottom:12px}
+    #rehalix-blueprint .tree-toolbar input{width:100%;font:inherit;background:var(--background);color:var(--foreground);border:1px solid var(--input);border-radius:9px;padding:9px 10px}
+    #rehalix-blueprint .page-list{display:flex;flex-direction:column;gap:5px}
+    #rehalix-blueprint .page-btn{font:inherit;text-align:left;border:0;background:transparent;color:var(--foreground);padding:10px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:9px}
+    #rehalix-blueprint .page-btn:hover{background:var(--accent);color:var(--accent-foreground)}
+    #rehalix-blueprint .page-btn[aria-pressed="true"]{background:var(--primary);color:var(--primary-foreground)}
+    #rehalix-blueprint .page-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--viz-series-1);flex:0 0 auto}
+    #rehalix-blueprint .page-btn small{display:block;color:inherit;opacity:.7;margin-left:auto}
+    #rehalix-blueprint .group-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted-foreground);padding:14px 10px 5px}
+    #rehalix-blueprint .detail{padding:22px;min-height:480px}
+    #rehalix-blueprint .detail-top{display:flex;justify-content:space-between;gap:16px;align-items:start}
+    #rehalix-blueprint .pill{display:inline-flex;padding:5px 8px;border-radius:999px;background:var(--secondary);color:var(--secondary-foreground);font-size:11px}
+    #rehalix-blueprint .detail h3{font-size:27px;margin:10px 0 5px}
+    #rehalix-blueprint .detail-summary{color:var(--muted-foreground);margin:0 0 18px}
+    #rehalix-blueprint .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid var(--border);padding-top:18px}
+    #rehalix-blueprint .mini-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-foreground);margin:0 0 8px}
+    #rehalix-blueprint ul{margin:0;padding-left:19px;line-height:1.7}
+    #rehalix-blueprint .section-stack{display:flex;flex-direction:column;gap:7px}
+    #rehalix-blueprint .section-chip{padding:9px 10px;border-radius:9px;background:var(--muted);color:var(--foreground);font-size:13px}
+    #rehalix-blueprint .next-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+    #rehalix-blueprint .next-link{font:inherit;border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:8px;padding:7px 9px;cursor:pointer;font-size:12px}
+    #rehalix-blueprint .next-link:hover{background:var(--accent);color:var(--accent-foreground)}
+    #rehalix-blueprint .journey-controls{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+    #rehalix-blueprint .journey-btn{font:inherit;border:1px solid var(--border);background:var(--card);color:var(--card-foreground);border-radius:9px;padding:9px 11px;cursor:pointer}
+    #rehalix-blueprint .journey-btn[aria-pressed="true"]{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+    #rehalix-blueprint .journey{padding:20px}
+    #rehalix-blueprint .flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:18px}
+    #rehalix-blueprint .flow-step{position:relative;padding:14px 12px;border:1px solid var(--border);border-radius:12px;min-height:118px;background:var(--background)}
+    #rehalix-blueprint .flow-step:not(:last-child)::after{content:"→";position:absolute;right:-10px;top:45%;z-index:2;color:var(--muted-foreground);background:var(--card);padding:0 2px}
+    #rehalix-blueprint .flow-step strong{font-size:13px;font-weight:500;display:block;margin-bottom:7px}
+    #rehalix-blueprint .flow-step span{font-size:12px;color:var(--muted-foreground);line-height:1.45;display:block}
+    #rehalix-blueprint .mockup-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px}
+    #rehalix-blueprint .page-picker{display:flex;flex-direction:column;gap:6px}
+    #rehalix-blueprint .mock-btn{font:inherit;border:1px solid transparent;background:transparent;color:var(--foreground);border-radius:9px;padding:10px;text-align:left;cursor:pointer}
+    #rehalix-blueprint .mock-btn:hover{background:var(--accent);color:var(--accent-foreground)}
+    #rehalix-blueprint .mock-btn[aria-pressed="true"]{border-color:var(--border);background:var(--card)}
+    #rehalix-blueprint .wireframe{overflow:hidden}
+    #rehalix-blueprint .browserbar{height:34px;background:var(--muted);display:flex;align-items:center;gap:5px;padding:0 12px;border-bottom:1px solid var(--border)}
+    #rehalix-blueprint .browserbar i{width:7px;height:7px;border-radius:50%;background:var(--muted-foreground);opacity:.45}
+    #rehalix-blueprint .wf-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+    #rehalix-blueprint .wf-logo{font-size:13px;font-weight:500;letter-spacing:.12em}
+    #rehalix-blueprint .wf-links{display:flex;gap:12px;font-size:10px;color:var(--muted-foreground)}
+    #rehalix-blueprint .wf-hero{padding:46px 28px;background:linear-gradient(135deg,color-mix(in srgb,var(--viz-series-1) 16%,var(--background)),var(--background))}
+    #rehalix-blueprint .wf-kicker{height:8px;width:90px;background:var(--muted-foreground);opacity:.45;border-radius:5px}
+    #rehalix-blueprint .wf-title{height:18px;width:min(78%,560px);background:var(--foreground);opacity:.86;border-radius:5px;margin:14px 0 9px}
+    #rehalix-blueprint .wf-title.short{width:min(58%,420px);margin-top:0}
+    #rehalix-blueprint .wf-copy{height:8px;width:min(66%,480px);background:var(--muted-foreground);opacity:.35;border-radius:5px;margin-top:20px}
+    #rehalix-blueprint .wf-copy.short{width:min(46%,330px);margin-top:7px}
+    #rehalix-blueprint .wf-actions{display:flex;gap:8px;margin-top:22px}
+    #rehalix-blueprint .wf-action{height:28px;width:104px;border-radius:7px;background:var(--primary)}
+    #rehalix-blueprint .wf-action.alt{background:transparent;border:1px solid var(--border)}
+    #rehalix-blueprint .wf-section{padding:24px 28px}
+    #rehalix-blueprint .wf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+    #rehalix-blueprint .wf-card{height:92px;border:1px solid var(--border);border-radius:10px;background:var(--background)}
+    #rehalix-blueprint .mock-caption{padding:14px 18px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-foreground)}
+    #rehalix-blueprint .content-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    #rehalix-blueprint .content-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px}
+    #rehalix-blueprint .content-card .number{font-size:11px;color:var(--muted-foreground);margin-bottom:20px}
+    #rehalix-blueprint .content-card p{font-size:13px;color:var(--muted-foreground);margin:8px 0 0}
+    #rehalix-blueprint .pipeline{margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:15px;background:var(--card)}
+    #rehalix-blueprint .pipeline-row{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:14px}
+    #rehalix-blueprint .pipeline-step{padding:12px 9px;border-radius:10px;background:var(--muted);font-size:12px;text-align:center}
+    #rehalix-blueprint .cap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    #rehalix-blueprint .capability{padding:20px}
+    #rehalix-blueprint .capability header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    #rehalix-blueprint .capability p{font-size:13px;color:var(--muted-foreground)}
+    #rehalix-blueprint .evidence{display:flex;flex-wrap:wrap;gap:6px}
+    #rehalix-blueprint .evidence span{padding:6px 8px;background:var(--muted);border-radius:7px;font-size:11px}
+    #rehalix-blueprint .decision-board{padding:18px}
+    #rehalix-blueprint .decision-row{display:grid;grid-template-columns:110px minmax(0,1fr) 150px;gap:12px;padding:14px 4px;border-bottom:1px solid var(--border);align-items:start}
+    #rehalix-blueprint .decision-row:last-child{border-bottom:0}
+    #rehalix-blueprint .status{font-size:11px;padding:5px 7px;border-radius:999px;background:var(--secondary);color:var(--secondary-foreground);width:max-content}
+    #rehalix-blueprint .decision-row strong{font-size:14px;font-weight:500}
+    #rehalix-blueprint .decision-row p{font-size:12px;color:var(--muted-foreground);margin:4px 0 0}
+    #rehalix-blueprint .owner{font-size:12px;color:var(--muted-foreground)}
+    #rehalix-blueprint .footer-note{margin-top:28px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted-foreground);font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    @media(max-width:850px){#rehalix-blueprint .topbar-inner{align-items:flex-start;flex-direction:column;gap:10px}#rehalix-blueprint .section-nav{width:100%}#rehalix-blueprint .metric-grid{grid-template-columns:repeat(2,1fr)}#rehalix-blueprint .strategy-grid,#rehalix-blueprint .content-grid{grid-template-columns:1fr}#rehalix-blueprint .workspace,#rehalix-blueprint .mockup-layout{grid-template-columns:1fr}#rehalix-blueprint .flow{grid-template-columns:1fr 1fr}#rehalix-blueprint .flow-step:not(:last-child)::after{display:none}#rehalix-blueprint .cap-grid{grid-template-columns:1fr}#rehalix-blueprint .pipeline-row{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:520px){#rehalix-blueprint .content{padding:20px 14px 42px}#rehalix-blueprint .topbar-inner{padding:12px 14px}#rehalix-blueprint .hero{padding-top:28px}#rehalix-blueprint .metric-grid{grid-template-columns:1fr 1fr}#rehalix-blueprint .metric{padding:14px}#rehalix-blueprint .detail-grid{grid-template-columns:1fr}#rehalix-blueprint .flow{grid-template-columns:1fr}#rehalix-blueprint .wf-links{display:none}#rehalix-blueprint .wf-grid{grid-template-columns:1fr}#rehalix-blueprint .pipeline-row{grid-template-columns:1fr 1fr}#rehalix-blueprint .decision-row{grid-template-columns:1fr}#rehalix-blueprint .owner{display:none}}
+  </style>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><div class="brand-mark">R</div><div class="brand-copy"><strong>REHALIX</strong><span>Independent site blueprint</span></div></div>
+      <nav class="section-nav" aria-label="Blueprint sections">
+        <button class="nav-btn" aria-pressed="true" data-panel="overview">Overview</button>
+        <button class="nav-btn" aria-pressed="false" data-panel="sitemap">Site map</button>
+        <button class="nav-btn" aria-pressed="false" data-panel="journeys">Journeys</button>
+        <button class="nav-btn" aria-pressed="false" data-panel="mockups">Page views</button>
+        <button class="nav-btn" aria-pressed="false" data-panel="content">Content</button>
+        <button class="nav-btn" aria-pressed="false" data-panel="capabilities">Capabilities</button>
+        <button class="nav-btn" aria-pressed="false" data-panel="decisions">Decisions</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="content">
+    <section class="panel is-active" data-panel-view="overview">
+      <div class="hero">
+        <p class="eyebrow">Rehalix global digital flagship · Working blueprint</p>
+        <h1>Make rehabilitation solutions easier to understand, trust and source.</h1>
+        <p class="lede">A conversion-oriented independent site for global distributors, institutional buyers and professional partners—connecting solution discovery, product evaluation, proof of capability and qualified inquiry.</p>
+        <div class="hero-actions">
+          <button class="action primary" data-jump="sitemap">Explore the architecture</button>
+          <button class="action" data-jump="journeys">Follow a buyer journey</button>
+        </div>
+      </div>
+      <div class="metric-grid" aria-label="Blueprint summary">
+        <div class="metric"><strong>7</strong><span>Primary navigation families</span></div>
+        <div class="metric"><strong>18</strong><span>Core page templates</span></div>
+        <div class="metric"><strong>4</strong><span>Priority buyer journeys</span></div>
+        <div class="metric"><strong>3</strong><span>Conversion actions</span></div>
+      </div>
+      <div class="strategy-grid">
+        <article class="strategy-card"><h3>Positioning</h3><p>A professional rehabilitation solution partner—not a catalogue-only exporter. Lead with buyer outcomes, then prove product and delivery capability.</p></article>
+        <article class="strategy-card"><h3>Architecture</h3><p>Three paths into the same offer: by solution, by product and by buyer need. Every path converges on proof, comparison and inquiry.</p></article>
+        <article class="strategy-card"><h3>Content engine</h3><p>Turn product expertise, application knowledge and delivery evidence into reusable pages, guides, cases, FAQs and channel assets.</p></article>
+      </div>
+    </section>
+
+    <section class="panel" data-panel-view="sitemap">
+      <div class="section-head"><div><p class="eyebrow">Clickable information architecture</p><h2>Every page has a job.</h2></div><p>Select a page to inspect its audience, core sections, conversion role and recommended next steps.</p></div>
+      <div class="workspace">
+        <aside class="tree">
+          <div class="tree-toolbar"><input id="page-search" type="search" placeholder="Find a page" aria-label="Find a page"></div>
+          <div id="page-list" class="page-list"></div>
+        </aside>
+        <article id="page-detail" class="detail" aria-live="polite"></article>
+      </div>
+    </section>
+
+    <section class="panel" data-panel-view="journeys">
+      <div class="section-head"><div><p class="eyebrow">Navigation relationships</p><h2>Four paths to qualified inquiry.</h2></div><p>Switch persona to see how discovery, evaluation, trust and action connect across the site.</p></div>
+      <div id="journey-controls" class="journey-controls"></div>
+      <article class="journey"><div id="journey-title"></div><div id="journey-flow" class="flow"></div></article>
+    </section>
+
+    <section class="panel" data-panel-view="mockups">
+      <div class="section-head"><div><p class="eyebrow">Page-level wireframes</p><h2>See the hierarchy before designing pixels.</h2></div><p>Choose a template to preview its content rhythm and decision flow.</p></div>
+      <div class="mockup-layout">
+        <div id="mock-picker" class="page-picker"></div>
+        <div class="wireframe">
+          <div class="browserbar"><i></i><i></i><i></i></div>
+          <div class="wf-nav"><span class="wf-logo">REHALIX</span><div class="wf-links"><span>Solutions</span><span>Products</span><span>Capabilities</span><span>Resources</span><span>Contact</span></div></div>
+          <div class="wf-hero"><div class="wf-kicker"></div><div class="wf-title"></div><div class="wf-title short"></div><div class="wf-copy"></div><div class="wf-copy short"></div><div class="wf-actions"><div class="wf-action"></div><div class="wf-action alt"></div></div></div>
+          <div class="wf-section"><div class="wf-kicker"></div><div id="wf-grid" class="wf-grid"><div class="wf-card"></div><div class="wf-card"></div><div class="wf-card"></div></div></div>
+          <div id="mock-caption" class="mock-caption"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel-view="content">
+      <div class="section-head"><div><p class="eyebrow">Content strategy</p><h2>One expertise base, many market assets.</h2></div><p>Content should reduce uncertainty at each buying stage and be reusable across the website, sales outreach and overseas channels.</p></div>
+      <div class="content-grid">
+        <article class="content-card"><div class="number">01 · Demand capture</div><h3>Solution & application pages</h3><p>Own high-intent problems, buyer scenarios and use cases before buyers know the exact product name.</p></article>
+        <article class="content-card"><div class="number">02 · Evaluation support</div><h3>Product & comparison content</h3><p>Translate specifications into selection logic, compatibility, configuration and procurement confidence.</p></article>
+        <article class="content-card"><div class="number">03 · Trust building</div><h3>Cases, capabilities & proof</h3><p>Show quality control, customization, delivery, service and real-world outcomes with verifiable evidence.</p></article>
+      </div>
+      <div class="pipeline"><h3>Maintainable publishing loop</h3><div class="pipeline-row"><div class="pipeline-step">Market question</div><div class="pipeline-step">Expert input</div><div class="pipeline-step">Pillar page</div><div class="pipeline-step">Article / FAQ</div><div class="pipeline-step">Sales asset</div><div class="pipeline-step">Review & refresh</div></div></div>
+    </section>
+
+    <section class="panel" data-panel-view="capabilities">
+      <div class="section-head"><div><p class="eyebrow">Capability system</p><h2>Turn “we can” into visible proof.</h2></div><p>Each capability needs evidence, a buyer benefit and a clear place in the conversion journey.</p></div>
+      <div class="cap-grid">
+        <article class="capability"><header><h3>Solution design</h3><span class="pill">Pre-sale</span></header><p>Match applications, environments, budgets and portfolios to an actionable solution.</p><div class="evidence"><span>Needs assessment</span><span>Portfolio mapping</span><span>Configuration guidance</span></div></article>
+        <article class="capability"><header><h3>Product & quality</h3><span class="pill">Evaluation</span></header><p>Make specifications, standards and quality controls understandable to professional buyers.</p><div class="evidence"><span>Technical documents</span><span>QC process</span><span>Compliance evidence</span></div></article>
+        <article class="capability"><header><h3>Customization & supply</h3><span class="pill">Procurement</span></header><p>Explain OEM/ODM boundaries, order process, production coordination and export delivery.</p><div class="evidence"><span>Customization scope</span><span>Lead-time logic</span><span>Packaging & logistics</span></div></article>
+        <article class="capability"><header><h3>Partner enablement</h3><span class="pill">Growth</span></header><p>Help distributors launch, sell and support the range in their local markets.</p><div class="evidence"><span>Training</span><span>Marketing assets</span><span>After-sales workflow</span></div></article>
+      </div>
+    </section>
+
+    <section class="panel" data-panel-view="decisions">
+      <div class="section-head"><div><p class="eyebrow">Open decision register</p><h2>What still needs an owner.</h2></div><p>Resolve these items before final visual design, copy production and development.</p></div>
+      <div class="decision-board">
+        <div class="decision-row"><span class="status">Positioning</span><div><strong>Primary market promise</strong><p>Choose the lead between “rehabilitation solution partner,” “equipment brand,” or a sharper category position.</p></div><span class="owner">Owner: Founder / Strategy</span></div>
+        <div class="decision-row"><span class="status">Portfolio</span><div><strong>Launch product scope</strong><p>Confirm which categories and flagship products deserve first-wave pages and navigation priority.</p></div><span class="owner">Owner: Product</span></div>
+        <div class="decision-row"><span class="status">Market</span><div><strong>Priority countries and buyer segments</strong><p>Decide whether localization starts by region, distributor type, institution type or application.</p></div><span class="owner">Owner: Sales</span></div>
+        <div class="decision-row"><span class="status">Proof</span><div><strong>Claims and evidence library</strong><p>Audit certifications, case materials, factory proof, customer permissions and data that can be published.</p></div><span class="owner">Owner: Operations</span></div>
+        <div class="decision-row"><span class="status">Conversion</span><div><strong>Inquiry routing and qualification</strong><p>Define form fields, response SLA, territory assignment and CRM or email workflow.</p></div><span class="owner">Owner: Sales Ops</span></div>
+      </div>
+    </section>
+
+    <footer class="footer-note"><span>Rehalix independent-site blueprint · Living strategy artifact</span><span>No external data required</span></footer>
+  </div>
+
+  <script>
+    (function(){
+      var root=document.getElementById("rehalix-blueprint");
+      var pages=[
+        {group:"Core",id:"home",name:"Home",type:"Gateway",summary:"Position Rehalix, route visitors by need and establish immediate credibility.",audience:["All priority buyers","First-time visitors"],sections:["Positioning hero","Buyer-path selector","Solution highlights","Featured products","Capability proof","Resources & cases","Global inquiry CTA"],cta:"Explore solutions / Start an inquiry",next:["solutions","products","capabilities"]},
+        {group:"Solutions",id:"solutions",name:"Solutions hub",type:"Discovery",summary:"Organize the offer around buyer problems and application outcomes.",audience:["Distributors","Institutional buyers","Project buyers"],sections:["Solution taxonomy","Application scenarios","Selection guide","Recommended products","Why Rehalix","Consultation CTA"],cta:"Discuss your requirement",next:["solution-detail","products","contact"]},
+        {group:"Solutions",id:"solution-detail",name:"Solution detail",type:"Conversion",summary:"Explain one buyer scenario from problem through configuration and implementation.",audience:["High-intent solution buyers"],sections:["Buyer problem","Target outcome","Recommended configuration","Product modules","Implementation process","Proof / FAQ","Qualified inquiry"],cta:"Request a solution proposal",next:["product-detail","capabilities","contact"]},
+        {group:"Products",id:"products",name:"Products hub",type:"Evaluation",summary:"Provide a clear portfolio overview without turning the site into a flat catalogue.",audience:["Product-led buyers","Distributors"],sections:["Category navigation","Selection logic","Featured range","Comparison entry","Documentation","Inquiry CTA"],cta:"Find the right product",next:["category","product-detail","compare"]},
+        {group:"Products",id:"category",name:"Category page",type:"Evaluation",summary:"Help buyers compare models within a category and understand ideal applications.",audience:["Technical evaluators","Procurement"],sections:["Category promise","Use cases","Product grid","Feature comparison","Selection guide","FAQ"],cta:"Ask for recommendations",next:["product-detail","compare","contact"]},
+        {group:"Products",id:"product-detail",name:"Product detail",type:"Decision",summary:"Turn specifications into suitability, confidence and a specific next action.",audience:["Procurement","Technical teams","Distributors"],sections:["Outcome-led hero","Key benefits","Application fit","Specifications","Options & accessories","Documents","Quality proof","Inquiry"],cta:"Request quote / datasheet",next:["compare","quality","contact"]},
+        {group:"Products",id:"compare",name:"Product comparison",type:"Decision",summary:"Make model trade-offs visible and reduce back-and-forth during qualification.",audience:["Shortlisting buyers"],sections:["Comparison controls","Key differences","Best-fit scenarios","Configuration notes","Recommendation CTA"],cta:"Get a tailored recommendation",next:["product-detail","contact"]},
+        {group:"Capabilities",id:"capabilities",name:"Capabilities hub",type:"Trust",summary:"Present Rehalix as an end-to-end partner across solution, quality, supply and growth.",audience:["Distributors","Strategic partners","Institutional buyers"],sections:["Capability overview","Solution design","Quality system","Customization","Global delivery","Partner enablement","Proof CTA"],cta:"Evaluate Rehalix as a partner",next:["quality","customization","partner"]},
+        {group:"Capabilities",id:"quality",name:"Quality & compliance",type:"Trust",summary:"Make quality control, documentation and compliance evidence easy to review.",audience:["Compliance teams","Procurement","Distributors"],sections:["Quality promise","Process controls","Testing","Documentation","Standards & certificates","FAQ"],cta:"Request compliance documents",next:["product-detail","contact"]},
+        {group:"Capabilities",id:"customization",name:"OEM / ODM",type:"Conversion",summary:"Define customization possibilities, constraints, process and commercial expectations.",audience:["Brand owners","Distributors"],sections:["Customization scope","Collaboration process","MOQ & timeline logic","Packaging / brand","Engineering proof","Project inquiry"],cta:"Discuss a custom project",next:["contact","partner"]},
+        {group:"Capabilities",id:"partner",name:"Distributor partnership",type:"Conversion",summary:"Explain who the program fits and how Rehalix helps partners launch and grow.",audience:["Regional distributors","Channel partners"],sections:["Partner profile","Market opportunity","Enablement package","Commercial process","Support model","Application form"],cta:"Become a Rehalix partner",next:["contact","resources"]},
+        {group:"Resources",id:"resources",name:"Resource center",type:"Education",summary:"Centralize expertise, product knowledge and proof into a searchable learning destination.",audience:["All research-stage visitors"],sections:["Topic filters","Guides","Cases","Product knowledge","Downloads","Newsletter / inquiry"],cta:"Explore guidance",next:["article","case","downloads"]},
+        {group:"Resources",id:"article",name:"Guide / article",type:"Demand",summary:"Answer a specific market question and connect education to a relevant solution.",audience:["Search visitors","Early-stage buyers"],sections:["Direct answer","Decision framework","Practical guidance","Related products","FAQ","Expert CTA"],cta:"Talk to a specialist",next:["solution-detail","product-detail","contact"]},
+        {group:"Resources",id:"case",name:"Case study",type:"Proof",summary:"Show context, solution, execution and outcome without unsupported claims.",audience:["Risk-conscious buyers"],sections:["Client context","Challenge","Solution","Implementation","Outcome","Evidence","Related offer"],cta:"Discuss a similar project",next:["solution-detail","contact"]},
+        {group:"Resources",id:"downloads",name:"Download center",type:"Enablement",summary:"Give qualified buyers fast access to catalogues, datasheets and documents.",audience:["Technical teams","Distributors"],sections:["Document filters","Datasheets","Catalogues","Certificates","Request unavailable files"],cta:"Request a document",next:["contact"]},
+        {group:"Company",id:"about",name:"About Rehalix",type:"Trust",summary:"Tell a focused story about purpose, expertise, operating model and global ambition.",audience:["All due-diligence visitors"],sections:["Brand purpose","Who we serve","Expertise","Milestones","Team / facilities","Values","Contact"],cta:"Meet Rehalix",next:["capabilities","contact"]},
+        {group:"Company",id:"contact",name:"Contact / inquiry",type:"Conversion",summary:"Capture context-rich inquiries and route them to the right owner quickly.",audience:["Qualified prospects","Partners"],sections:["Inquiry type","Buyer profile","Product / solution need","Market & timeline","Contact details","Response expectation"],cta:"Submit inquiry",next:["thank-you"]},
+        {group:"Company",id:"thank-you",name:"Thank-you / next step",type:"Nurture",summary:"Confirm submission, set expectations and offer useful next actions.",audience:["Converted visitors"],sections:["Confirmation","Response SLA","Relevant resources","Document checklist","Alternative contact"],cta:"Continue exploring",next:["resources","products"]}
+      ];
+      var journeys=[
+        {id:"distributor",name:"Distributor",title:"Distributor partnership journey",steps:[["Market fit","Home → Distributor partnership","Can this portfolio win in my market?"],["Portfolio","Products hub → Category","Is the range coherent and sellable?"],["Confidence","Quality → Partner enablement","Can Rehalix support launch and service?"],["Proof","Cases → Downloads","Do claims and materials stand up?"],["Action","Partner application","Territory, channels and plan"]]},
+        {id:"institution",name:"Institutional buyer",title:"Institutional procurement journey",steps:[["Need","Solution hub","Which configuration fits our use?"],["Evaluation","Solution detail → Product","What exactly is included?"],["Risk","Quality & compliance","Can the supplier pass review?"],["Selection","Comparison → Documents","Which model and evidence?"],["Action","Project inquiry","Scope, quantity, timing"]]},
+        {id:"brand",name:"OEM / ODM buyer",title:"Customization journey",steps:[["Capability","OEM / ODM landing","What can be customized?"],["Fit","Scope & constraints","Does our brief qualify?"],["Process","Development workflow","How will the project run?"],["Confidence","Quality → Case","Can they deliver consistently?"],["Action","Custom project inquiry","Brief, target, volume"]]},
+        {id:"professional",name:"Professional researcher",title:"Expertise-led journey",steps:[["Question","Guide / article","Get a direct, useful answer"],["Framework","Solution page","Understand decision logic"],["Options","Product / comparison","Review suitable choices"],["Trust","Case → Capability","Validate expertise"],["Action","Specialist consultation","Ask a specific question"]]}
+      ];
+      var mocks=[
+        {id:"home",name:"Homepage",caption:"Positioning → buyer-path choice → solution and product proof → capability evidence → inquiry.",cards:3},
+        {id:"solution",name:"Solution detail",caption:"Problem → target outcome → recommended configuration → related products → implementation proof.",cards:3},
+        {id:"product",name:"Product detail",caption:"Application fit → benefits → specifications → options → documentation → quote request.",cards:4},
+        {id:"partner",name:"Distributor page",caption:"Partner fit → market value → enablement → support model → territory application.",cards:3},
+        {id:"resource",name:"Resource center",caption:"Topic-led discovery across guides, cases, product knowledge and downloads.",cards:6}
+      ];
+      function showPanel(id){
+        root.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("is-active",p.getAttribute("data-panel-view")===id);});
+        root.querySelectorAll(".nav-btn").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-panel")===id));});
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+      root.querySelectorAll(".nav-btn").forEach(function(b){b.addEventListener("click",function(){showPanel(b.getAttribute("data-panel"));});});
+      root.querySelectorAll("[data-jump]").forEach(function(b){b.addEventListener("click",function(){showPanel(b.getAttribute("data-jump"));});});
+      var listEl=root.querySelector("#page-list"),detailEl=root.querySelector("#page-detail"),searchEl=root.querySelector("#page-search");
+      function renderList(filter){
+        var q=(filter||"").toLowerCase(),last="";listEl.innerHTML="";
+        pages.filter(function(p){return !q||p.name.toLowerCase().indexOf(q)>-1||p.group.toLowerCase().indexOf(q)>-1||p.type.toLowerCase().indexOf(q)>-1;}).forEach(function(p){
+          if(p.group!==last){var label=document.createElement("div");label.className="group-label";label.textContent=p.group;listEl.appendChild(label);last=p.group;}
+          var b=document.createElement("button");b.className="page-btn";b.setAttribute("data-page",p.id);b.setAttribute("aria-pressed","false");b.innerHTML='<span class="dot"></span><span>'+p.name+'</span><small>'+p.type+'</small>';b.addEventListener("click",function(){selectPage(p.id);});listEl.appendChild(b);
+        });
+      }
+      function selectPage(id){
+        var p=pages.find(function(x){return x.id===id;})||pages[0];
+        root.querySelectorAll(".page-btn").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-page")===p.id));});
+        detailEl.innerHTML='<div class="detail-top"><div><span class="pill">'+p.group+' · '+p.type+'</span><h3>'+p.name+'</h3></div><span class="pill">'+p.audience.length+' audiences</span></div><p class="detail-summary">'+p.summary+'</p><div class="detail-grid"><div><p class="mini-label">Primary audience</p><ul>'+p.audience.map(function(x){return '<li>'+x+'</li>';}).join("")+'</ul><p class="mini-label" style="margin-top:18px">Primary conversion</p><div class="section-chip">'+p.cta+'</div></div><div><p class="mini-label">Recommended sections</p><div class="section-stack">'+p.sections.map(function(x){return '<div class="section-chip">'+x+'</div>';}).join("")+'</div></div></div><p class="mini-label" style="margin-top:20px">Recommended next pages</p><div class="next-links">'+p.next.map(function(id){var n=pages.find(function(x){return x.id===id;});return n?'<button class="next-link" data-next="'+n.id+'">'+n.name+'</button>':"";}).join("")+'</div>';
+        detailEl.querySelectorAll("[data-next]").forEach(function(b){b.addEventListener("click",function(){selectPage(b.getAttribute("data-next"));});});
+      }
+      searchEl.addEventListener("input",function(){renderList(searchEl.value);});
+      renderList("");selectPage("home");
+      var jc=root.querySelector("#journey-controls"),jf=root.querySelector("#journey-flow"),jt=root.querySelector("#journey-title");
+      journeys.forEach(function(j,i){var b=document.createElement("button");b.className="journey-btn";b.textContent=j.name;b.setAttribute("aria-pressed",String(i===0));b.setAttribute("data-journey",j.id);b.addEventListener("click",function(){selectJourney(j.id);});jc.appendChild(b);});
+      function selectJourney(id){var j=journeys.find(function(x){return x.id===id;})||journeys[0];root.querySelectorAll(".journey-btn").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-journey")===j.id));});jt.innerHTML='<h3>'+j.title+'</h3><p class="detail-summary">Each step answers a different buying question.</p>';jf.innerHTML=j.steps.map(function(s){return '<div class="flow-step"><strong>'+s[0]+'</strong><span>'+s[1]+'</span><span style="margin-top:7px">'+s[2]+'</span></div>';}).join("");}
+      selectJourney("distributor");
+      var mp=root.querySelector("#mock-picker"),mc=root.querySelector("#mock-caption"),wg=root.querySelector("#wf-grid");
+      mocks.forEach(function(m,i){var b=document.createElement("button");b.className="mock-btn";b.textContent=m.name;b.setAttribute("aria-pressed",String(i===0));b.setAttribute("data-mock",m.id);b.addEventListener("click",function(){selectMock(m.id);});mp.appendChild(b);});
+      function selectMock(id){var m=mocks.find(function(x){return x.id===id;})||mocks[0];root.querySelectorAll(".mock-btn").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-mock")===m.id));});mc.textContent=m.caption;wg.innerHTML=Array.from({length:m.cards},function(){return '<div class="wf-card"></div>';}).join("");wg.style.gridTemplateColumns=m.cards>3?"repeat(3,1fr)":"repeat("+m.cards+",1fr)";}
+      selectMock("home");
+    })();
+  </script>
+</main>
+
+<script id="codex-visualization-floating-ui-core" src="https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js"></script>
+<script id="codex-visualization-floating-ui-dom" src="https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js"></script>
+<script id="codex-visualization-lucide" async src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+<script id="codex-visualization-tooltip">/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-call, typescript/no-unsafe-return */
+// Runs inside the visualization sandbox, not the host webview.
+(() => {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set(["top", "right", "bottom", "left"]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =>
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest("[data-tooltip]")
+      : null;
+  const containsTarget = (trigger, target) =>
+    target?.nodeType != null && trigger.contains(target);
+  const getContent = (trigger) =>
+    trigger.getAttribute("data-tooltip")?.trim() ?? "";
+  const getPlacement = (trigger) => {
+    const placement = trigger.getAttribute("data-tooltip-placement");
+    return tooltipPlacements.has(placement) ? placement : "top";
+  };
+  const getTooltip = () => {
+    if (tooltip == null) {
+      tooltip = document.createElement("div");
+      tooltip.id = tooltipId;
+      tooltip.className = "tooltip";
+      tooltip.setAttribute("role", "tooltip");
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) => {
+    const ids = new Set(
+      (trigger.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute("aria-describedby");
+    } else {
+      trigger.setAttribute("aria-describedby", [...ids].join(" "));
+    }
+  };
+  const clearOpenTimeout = () => {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) => {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) => {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              "--tooltip-available-width",
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              "--tooltip-available-height",
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: "fixed",
+    })
+      .then(({ x, y }) => {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = "visible";
+      })
+      .catch(() => {
+        if (activeTrigger === trigger && request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) => {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = "hidden";
+    floating.style.transform = "translate(0, 0)";
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () => {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) => {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() < skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() => {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(":focus-visible")) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) => {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () => {
+    closeTooltip(false);
+    document.removeEventListener("pointerover", handlePointerOpen);
+    document.removeEventListener("pointerout", handleLeave);
+    document.removeEventListener("focusin", handleFocusIn);
+    document.removeEventListener("focusout", handleLeave);
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("contextmenu", handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener("pointerover", handlePointerOpen);
+  document.addEventListener("pointerout", handleLeave);
+  document.addEventListener("focusin", handleFocusIn);
+  document.addEventListener("focusout", handleLeave);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("contextmenu", handleContextMenu);
+  window.addEventListener("pagehide", destroy, { once: true });
+})();
+</script>
+<script id="codex-visualization-lucide-initialization">(() => {
+  const initialize = () => {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById("codex-visualization-lucide")
+    ?.addEventListener("load", initialize, { once: true });
+})();
+</script>
+</body>
+</html>
